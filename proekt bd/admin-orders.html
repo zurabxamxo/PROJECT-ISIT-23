@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>История заказов</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" style="padding: 40px;">
+        <h1>История заказов</h1>
+        <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Дата</th>
+                    <th>Сумма</th>
+                    <th>Товары (JSON)</th>
+                </tr>
+            </thead>
+            <tbody id="orders-table-body"></tbody>
+        </table>
+    </div>
+
+    <script>
+        // 1. Проверка наличия токена при загрузке страницы
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert("Пожалуйста, войдите в систему!");
+            window.location.href = 'login.html';
+        }
+
+        async function loadOrders() {
+            try {
+                // 2. Отправляем запрос с токеном в заголовке
+                const response = await fetch('http://localhost:3000/api/orders', {
+                    headers: { 
+                        'Authorization': `Bearer ${token}` 
+                    }
+                });
+
+                if (response.status === 401) {
+                    alert("Сессия истекла или токен неверный!");
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const orders = await response.json();
+                const tbody = document.getElementById('orders-table-body');
+                
+                tbody.innerHTML = orders.map(o => {
+                    const items = JSON.parse(o.items_json);
+                    const itemsList = items.map(i => `${i.name}`).join(', ');
+
+                    return `
+                        <tr>
+                            <td>${o.id}</td>
+                            <td>${new Date(o.order_date).toLocaleString()}</td>
+                            <td>${o.total_price} руб.</td>
+                            <td>${itemsList}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error("Ошибка загрузки:", err);
+            }
+        }
+
+        loadOrders();
+    </script>
+</body>
+</html>

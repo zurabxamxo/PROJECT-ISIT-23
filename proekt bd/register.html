@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - Магазин автозапчастей</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <h2>Создание аккаунта</h2>
+        
+        <input type="text" id="reg-username" placeholder="Придумайте логин" required>
+        <input type="email" id="reg-email" placeholder="Ваш Email" required>
+        <input type="password" id="reg-password" placeholder="Пароль" required>
+        <input type="password" id="reg-confirm-password" placeholder="Повторите пароль" required>
+        
+        <button id="register-btn" class="btn">Зарегистрироваться</button>
+        
+        <p style="margin-top: 15px;">Уже есть аккаунт? <a href="login.html">Войти</a></p>
+    </div>
+
+    <script>
+        document.getElementById('register-btn').addEventListener('click', async () => {
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('reg-confirm-password').value;
+
+            if (password !== confirmPassword) {
+                alert("Пароли не совпадают!");
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert("Регистрация успешна!");
+                    window.location.href = 'login.html';
+                } else {
+                    // Теперь здесь корректный вывод ошибки от сервера
+                    alert("Ошибка: " + (data.message || "Неизвестная ошибка"));
+                }
+            } catch (error) {
+                console.error("Ошибка сети:", error);
+                alert("Ошибка подключения к серверу. Убедитесь, что он запущен.");
+            }
+        });
+    </script>
+</body>
+</html>
